@@ -6,9 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class Bank implements Serializable {
+public class Bank <T extends BankAccount> implements Serializable {
 
-    HashMap<String, BankAccount> accounts;
+    HashMap<String, T> accounts;
 
     public Bank() throws IOException {
 
@@ -21,7 +21,7 @@ public class Bank implements Serializable {
         }
     }
 
-    public void addAccount(BankAccount account) {
+    public void addAccount(T account) {
         accounts.put(account.getAccountNumber(), account);
         saveAccountsInFile();
     }
@@ -31,14 +31,14 @@ public class Bank implements Serializable {
         saveAccountsInFile();
     }
 
-    public BankAccount findAccount(String accountNumber) {
+    public T findAccount(String accountNumber) {
         return accounts.get(accountNumber);
     }
 
-    public List<BankAccount> listAccounts() {
-        List<BankAccount> accountsList = new ArrayList<>();
+    public List<T> listAccounts() {
+        List<T> accountsList = new ArrayList<>();
         for (HashMap.Entry mapElement : accounts.entrySet())
-            accountsList.add((BankAccount) mapElement.getValue());
+            accountsList.add((T) mapElement.getValue());
         return accountsList;
     }
 
@@ -58,12 +58,12 @@ public class Bank implements Serializable {
         }
     }
 
-    private HashMap<String, BankAccount> fetchAccountsFromFile() {
-        List<BankAccount> bankAccountList;
+    private HashMap<String, T> fetchAccountsFromFile() {
+        List<T> bankAccountList;
 
         try (FileInputStream fileInputStream = new FileInputStream("AccountsSaveFile.txt")) {
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-            bankAccountList = (List<BankAccount>) objectInputStream.readObject();
+            bankAccountList = (List<T>) objectInputStream.readObject();
             objectInputStream.close();
         } catch (Exception e) {
             // Handle the exceptions
@@ -71,8 +71,8 @@ public class Bank implements Serializable {
             bankAccountList = new ArrayList<>();
         }
 
-        HashMap<String, BankAccount> accountHashMap = new HashMap<>();
-        for (BankAccount bankAccount : bankAccountList) {
+        HashMap<String, T> accountHashMap = new HashMap<>();
+        for (T bankAccount : bankAccountList) {
             accountHashMap.put(bankAccount.getAccountNumber(), bankAccount);
         }
         return accountHashMap;
