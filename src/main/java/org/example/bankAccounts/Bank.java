@@ -4,9 +4,12 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.function.Predicate;
 
-public class Bank <T extends BankAccount> implements Serializable {
+public class Bank<T extends BankAccount> implements Serializable {
 
     HashMap<String, T> accounts;
 
@@ -42,18 +45,19 @@ public class Bank <T extends BankAccount> implements Serializable {
         return accountsList;
     }
 
-    private void createFile() throws IOException{
+    private void createFile() throws IOException {
         {
             Path newFilePath = Paths.get("AccountsSaveFile.txt");
             Files.createFile(newFilePath);
         }
     }
+
     private void saveAccountsInFile() {
         try (FileOutputStream fileOutputStream = new FileOutputStream("AccountsSaveFile.txt")) {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(listAccounts());
             objectOutputStream.close();
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -82,9 +86,31 @@ public class Bank <T extends BankAccount> implements Serializable {
         accounts = fetchAccountsFromFile();
         listAccounts().stream()
                 .map(
-                        (account -> ("Account number: " + account.getAccountNumber() + "\t Holder: " + account.getAccountHolderName())
+                        (account -> ("Account number: " + account.getAccountNumber() +
+                                "\t Holder: " + account.getAccountHolderName() +
+                                "\t Balance: " + account.getBalance())
                         )
-                ).forEach(System.out::println);
+                ).sorted()
+                .forEach(System.out::println);
 
     }
+
+    public void totalBalanceOfAccount(Double minimumBalance) {
+        Double total = listAccounts().stream()
+                .filter(account -> account.balance >= minimumBalance)
+                .map(account -> account.balance)
+                .reduce( 0.0, Double::sum);
+
+        System.out.println("Total Balance of Account by minimum balance " +
+                minimumBalance + ": " + total);
+
+    }
+
+    public void applyInterestManually(){
+        listAccounts().stream()
+                .filter(account -> account.getClass().equals(SavingAccount.class))
+                .forEach(account -> ((SavingAccount) account).applyInterest());
+        saveAccountsInFile();
+    }
 }
+

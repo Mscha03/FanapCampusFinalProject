@@ -2,10 +2,8 @@ package org.example.bankAccounts;
 
 import org.example.exeptions.InsufficientFundsException;
 import org.example.exeptions.InvalidTransactionException;
-
-import java.util.Calendar;
-import java.util.Timer;
-import java.util.TimerTask;
+import org.example.scheduler.Period;
+import org.example.scheduler.Scheduler;
 
 public class SavingAccount extends BankAccount {
     final double interestRate;
@@ -15,13 +13,13 @@ public class SavingAccount extends BankAccount {
         super(accountNumber, accountHolderName, balance);
         this.interestRate = interestRate;
         this.minimumBalance = minimumBalance;
-        runApplyInterest();
+        applyInterestByTime();
     }
 
     public SavingAccount(String accountNumber, String accountHolderName, double interestRate) {
         super(accountNumber, accountHolderName);
         this.interestRate = interestRate;
-        runApplyInterest();
+        applyInterestByTime();
     }
 
     public void applyInterest (){
@@ -40,18 +38,15 @@ public class SavingAccount extends BankAccount {
              balance -= amount;
      }
 
-     public void runApplyInterest() {
-         Timer timer = new Timer();
+     private void applyInterestByTime() {
+        Scheduler scheduler = new Scheduler(Period.Monthly) {
+            @Override
+            public void doOnTime() {
+                applyInterest();
+            }
 
-         TimerTask task = new TimerTask() {
-             @Override
-             public void run() {
-                 applyInterest();
-             }
-         };
+        };
+    }
 
-         Calendar date = Calendar.getInstance();
-         date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), 1, 0, 0, 0);
-         timer.schedule(task, date.getTime(), 1000L * 60 * 60 * 24 * 30);
-     }
+
 }
